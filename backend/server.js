@@ -21,7 +21,7 @@ var tareas = [
   { _id: 2, trabajo: "segunda tarea", usuario: "Daniel Torres" },
 ];
 
-var users = [];
+var users = [{nombre: 'fran', email: 'fran@gmail.es', password: 'gogo', id: 0}];
 
 //
 
@@ -51,13 +51,32 @@ res.json(req.body);
 //* aplicando politica de 'CORS' con 'auth'
 auth.use(cors());
 
+auth.post("/login", cors(corsOpt), (req, res) => {
+ var user = users.find(user => user.email == req.body.email);
+ if (!user) 
+ senderrorauth(res);
+ if (user.password == req.body.password)
+ sendtoken(user, res);
+ else
+ senderrorauth(res)
+ //
+}); 
+
 auth.post("/register", cors(corsOpt), (req, res) => {
   var index = users.push(req.body) -1;
   var user = users[index];
   user.id = index;
-  var token = jwt.sign(user.id, config.llave);
-  res.json({nombre: user.nombre, token});
+  sendtoken(user, res); 
 }); 
+
+function sendtoken(user, res){
+ var token = jwt.sign(user.id, config.llave);
+ res.json({ nombre: user.nombre, token });
+}
+
+function senderrorauth( res){
+return res.json({success: false, message: 'Email o passaword erroneo'});
+}
 
 app.use("/api", api);
 app.use("/auth", auth);
