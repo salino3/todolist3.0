@@ -27,7 +27,7 @@ var users = [{nombre: 'fran', email: 'fran@gmail.es', password: 'gogo', id: 0}];
 
 app.use(bp.json());// parsea el body de las peticiones en 'json'
 var api = express.Router();
-var auth = express.Router();
+var auth = express.Router(); 
 
 api.use(cors());// aplicar siempre politica de 'CORS'
 
@@ -46,6 +46,18 @@ api.get("/tareas/:username", cors(corsOpt), (req, res) => {
 api.post("/tarea", cors(corsOpt), (req, res) => {
 tareas.push(req.body);
 res.json(req.body); 
+});
+
+// 'checkauth' està haciendo función de mildware
+api.get("/users/yop", cors(corsOpt), checkauth, (req, res) => {
+  res.json(users[req.user]);
+});
+
+api.post("/users/yop", cors(corsOpt), checkauth, (req, res) => {
+  var user = users[req.user];
+  user.nombre = req.body.nombre;
+  user.email = req.body.email;
+  res.json(user);
 });
 
 //* aplicando politica de 'CORS' con 'auth'
@@ -76,6 +88,19 @@ function sendtoken(user, res){
 
 function senderrorauth( res){
 return res.json({success: false, message: 'Email o passaword erroneo'});
+}
+
+// el mildware
+function checkauth(req, res, next){
+ if(!req.header('Authorization'))
+ return res.status(401).send({message: 'No tienes autorización'})
+ var token = req.header('authorization').split(' ')[1];
+ var decode = jwt.verify(token, config.llave);
+ if (!decode)
+ return res.status(401).send({ message: "El token no es valido" })
+ req.user = decode;
+ console.log('ID usuario: ', decode)
+ next();
 }
 
 app.use("/api", api);
