@@ -3,12 +3,29 @@
 //> nodemon server.js -->  por levantar server
 // npm install --save body-parser --> para que entienda file JSON
 // npm install jsonwebtoken --save
+// npm install mongodb  //* base de datos
+
+
 
 var express = require("express");
 var cors = require('cors');
 var bp = require('body-parser');
 var jwt = require('jsonwebtoken');
-var config = require('./configs/config')
+var config = require('./configs/config');
+var mongodb = require("mongodb");
+
+/* Base de datos */
+
+var uri = "mongodb+srv://mongoqwerty:firenzesalerno@cluster0.tb4bgp3.mongodb.net/?retryWrites=true&w=majority";
+
+mongodb.MongoClient.connect(uri, {useUnifiedTopology: true}, function(err, data){
+  if(err) throw err;
+  var db = data.db('todolist');
+  db.collection('tareas').find({}).toArray(function(err, result){
+    tareas = result;
+  })
+})
+
 
 var app = express();
 var corsOpt = {
@@ -16,10 +33,7 @@ var corsOpt = {
   optionsSuccesStatus: 200
 }
 
-var tareas = [ 
-  { _id: 1, trabajo: "primera tarea", usuario: "David  Gonzales" },
-  { _id: 2, trabajo: "segunda tarea", usuario: "Daniel Torres" },
-];
+var tareas = [];
 
 var users = [{nombre: 'fran', email: 'fran@gmail.es', password: 'gogo', id: 0}];
 
